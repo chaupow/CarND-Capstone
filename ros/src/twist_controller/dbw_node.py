@@ -51,9 +51,9 @@ class DBWNode(object):
             "/vehicle/steering_cmd", SteeringCmd, queue_size=1
         )
         self.throttle_pub = rospy.Publisher(
-            "/vehicle/throttle_cmd", ThrottleCmd, queue_size=1
+            "/vehicle/throttle_cmd", ThrottleCmd, queue_size=2
         )
-        self.brake_pub = rospy.Publisher("/vehicle/brake_cmd", BrakeCmd, queue_size=1)
+        self.brake_pub = rospy.Publisher("/vehicle/brake_cmd", BrakeCmd, queue_size=2)
 
         # TODO: Create `Controller` object
         self.controller = Controller(
