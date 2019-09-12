@@ -59,41 +59,44 @@ class WaypointUpdater(object):
     def get_closest_waypoint_idx(self):
         x = self.pose.pose.position.x
         y = self.pose.pose.position.y
-        closest_idx = self.waypoint_tree.query([x, y], 1)[1]
+        if self.waypoint_tree:
+            closest_idx = self.waypoint_tree.query([x, y], 1)[1]
 
-        # Check if closest is ahead or behind vehicle
-        closest_coord = self.waypoints_2d[closest_idx]
-        prev_coord = self.waypoints_2d[closest_idx - 1]
+            # Check if closest is ahead or behind vehicle
+            closest_coord = self.waypoints_2d[closest_idx]
+            prev_coord = self.waypoints_2d[closest_idx - 1]
 
-        # Equation for hyperplane through closest_coords
-        cl_vect = np.array(closest_coord)
-        prev_vect = np.array(prev_coord)
-        pos_vect = np.array([x, y])
+            # Equation for hyperplane through closest_coords
+            cl_vect = np.array(closest_coord)
+            prev_vect = np.array(prev_coord)
+            pos_vect = np.array([x, y])
 
-        val = np.dot(cl_vect - prev_vect, pos_vect - cl_vect)
+            val = np.dot(cl_vect - prev_vect, pos_vect - cl_vect)
 
-        if val > 0:
-            closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
-        # rospy.logwarn("closest_idx={}".format(closest_idx))
-        return closest_idx
+            if val > 0:
+                closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
+            return closest_idx
 
     def publish_waypoints(self):
         final_lane = self.generate_lane()
-        self.final_waypoints_pub.publish(final_lane)
+        if final_lane:
+            self.final_waypoints_pub.publish(final_lane)
 
     def generate_lane(self):
         lane = Lane()
 
         closest_idx = self.get_closest_waypoint_idx()
-        farthest_idx = closest_idx + LOOKAHEAD_WPS
-        base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
+        if closest_idx:
+            farthest_idx = closest_idx + LOOKAHEAD_WPS
+            base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
 
-        if (self.stopline_wp_idx == -1) or (self.stopline_wp_idx >= farthest_idx):
-            lane.waypoints = base_waypoints
-        else:
-            lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
+            if (self.stopline_wp_idx == -1) or (self.stopline_wp_idx >= farthest_idx):
+                lane.waypoints = base_waypoints
+            else:
+                rospy.logwarn("seeing red light. decelerating")
+                lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
 
-        return lane
+            return lane
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
