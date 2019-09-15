@@ -66,21 +66,24 @@ class TLDetector(object):
         # try ignoring some images
         self.i = 0
 
-
         # rospy.spin()
         self.ros_spin()
 
     def ros_spin(self):
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
-            '''Publish upcoming red lights at camera frequency.
+            """Publish upcoming red lights at camera frequency.
             Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
             of times till we start using it. Otherwise the previous stable state is
             used.
-            '''
-            if self.pose is not None and self.waypoints is not None and self.camera_image is not None:
+            """
+            if (
+                self.pose is not None
+                and self.waypoints is not None
+                and self.camera_image is not None
+            ):
                 light_wp, state = self.process_traffic_lights()
-                #print("Light waypoint Index: ",light_wp, "Traffic Light: ",TrafficLight.RED, state)
+                # print("Light waypoint Index: ",light_wp, "Traffic Light: ",TrafficLight.RED, state)
                 if self.state != state:
                     self.state_count = 0
                     self.state = state
@@ -89,12 +92,11 @@ class TLDetector(object):
                     light_wp = light_wp if state == TrafficLight.RED else -1
                     self.last_wp = light_wp
                     self.upcoming_red_light_pub.publish(Int32(light_wp))
-                    #print(light_wp,self.state_count)
+                    # print(light_wp,self.state_count)
                 else:
                     self.upcoming_red_light_pub.publish(Int32(self.last_wp))
                 self.state_count += 1
             rate.sleep()
-
 
     def pose_cb(self, msg):
         self.pose = msg
@@ -120,7 +122,7 @@ class TLDetector(object):
 
         """
         self.i = self.i + 1
-        #if self.i % 10 != 0:
+        # if self.i % 10 != 0:
         #    return
         self.has_image = True
         self.camera_image = msg
@@ -155,7 +157,7 @@ class TLDetector(object):
 
         """
         # TODO implement
-        closest_idx = self.waypoint_tree.query([x,y], 1)[1]
+        closest_idx = self.waypoint_tree.query([x, y], 1)[1]
         return closest_idx
 
     def get_light_state(self, light):
@@ -171,13 +173,13 @@ class TLDetector(object):
 
         # return light.state
 
-        if(not self.has_image):
+        if not self.has_image:
             self.prev_light_loc = None
             return False
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
 
-        #Get classification
+        # Get classification
 
         return self.light_classifier.get_classification(cv_image)
 
