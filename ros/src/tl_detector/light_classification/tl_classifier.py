@@ -66,6 +66,6 @@ class TLClassifier(object):
                 return TrafficLight.YELLOW
             else:
                 print("ignored yello", scores[0])
-
-        print("unknown      ", scores[0])
+        else:
+            print("unknown      ", scores[0])
         return TrafficLight.UNKNOWN

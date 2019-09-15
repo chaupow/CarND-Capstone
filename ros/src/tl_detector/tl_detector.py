@@ -16,7 +16,7 @@ import numpy as np
 
 # from darknet_ros_msgs.msg import BoundingBoxes
 
-STATE_COUNT_THRESHOLD = 3
+STATE_COUNT_THRESHOLD = 2
 ROSPY_RATE = 10
 
 
@@ -45,7 +45,7 @@ class TLDetector(object):
         sub3 = rospy.Subscriber(
             "/vehicle/traffic_lights", TrafficLightArray, self.traffic_cb
         )
-        sub6 = rospy.Subscriber("/image_color", Image, self.image_cb)
+        sub6 = rospy.Subscriber("/image_color", Image, self.image_cb, queue_size=1)
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
@@ -56,7 +56,7 @@ class TLDetector(object):
         self.is_site = self.config["is_site"]
 
         self.bridge = CvBridge()
-        self.light_classifier = TLClassifier(self.is_sim)
+        self.light_classifier = TLClassifier(self.is_site)
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
@@ -150,8 +150,9 @@ class TLDetector(object):
 
         """
         # TODO implement
-        closest_idx = self.waypoint_tree.query([x, y], 1)[1]
-        return closest_idx
+        if self.waypoint_tree: 
+            closest_idx = self.waypoint_tree.query([x, y], 1)[1]
+            return closest_idx
 
     def get_light_state(self, light):
         """Determines the current color of the traffic light
