@@ -4,8 +4,8 @@ import numpy as np
 
 
 class TLClassifier(object):
-    def __init__(self, is_sim):
-        if is_sim:
+    def __init__(self, is_site):
+        if not is_site:
             PATH_GRAPH = r"light_classification/models/sim/frozen_inference_graph.pb"
         else:
             PATH_GRAPH = r"light_classification/models/real/frozen_inference_graph.pb"
