@@ -1,24 +1,24 @@
-import rospy
-
-import tf
-from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
-from dbw_mkz_msgs.msg import SteeringReport, ThrottleCmd, BrakeCmd, SteeringCmd
-from std_msgs.msg import Float32 as Float
-from std_msgs.msg import Bool
-from sensor_msgs.msg import PointCloud2
-from sensor_msgs.msg import Image
-import sensor_msgs.point_cloud2 as pcl2
-from std_msgs.msg import Header
-from cv_bridge import CvBridge, CvBridgeError
-
-from styx_msgs.msg import TrafficLight, TrafficLightArray, Lane
-import numpy as np
-from PIL import Image as PIL_Image
-from io import BytesIO
 import base64
-
 import math
+from io import BytesIO
 
+import numpy as np
+import rospy
+import sensor_msgs.point_cloud2 as pcl2
+import tf
+from PIL import Image as PIL_Image
+from cv_bridge import CvBridge
+from dbw_mkz_msgs.msg import SteeringReport, ThrottleCmd, BrakeCmd, SteeringCmd
+from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import PointCloud2
+from std_msgs.msg import Bool
+from std_msgs.msg import Float32 as Float
+from std_msgs.msg import Header
+from styx_msgs.msg import TrafficLight, TrafficLightArray, Lane
+
+# throttle the number of images published for under-powered rigs
+IMAGE_THROTTLE_FACTOR = 2
 TYPE = {
     "bool": Bool,
     "float": Float,
@@ -43,6 +43,7 @@ class Bridge(object):
         self.yaw = None
         self.angular_vel = 0.0
         self.bridge = CvBridge()
+        self.image_count = 0
 
         self.callbacks = {
             "/vehicle/steering_cmd": self.callback_steering,
@@ -188,12 +189,14 @@ class Bridge(object):
         self.publishers["dbw_status"].publish(Bool(data))
 
     def publish_camera(self, data):
-        imgString = data["image"]
-        image = PIL_Image.open(BytesIO(base64.b64decode(imgString)))
-        image_array = np.asarray(image)
+        self.image_count += 1
+        if (self.image_count % IMAGE_THROTTLE_FACTOR) == 0:
+            imgString = data["image"]
+            image = PIL_Image.open(BytesIO(base64.b64decode(imgString)))
+            image_array = np.asarray(image)
 
-        image_message = self.bridge.cv2_to_imgmsg(image_array, encoding="rgb8")
-        self.publishers["image"].publish(image_message)
+            image_message = self.bridge.cv2_to_imgmsg(image_array, encoding="rgb8")
+            self.publishers["image"].publish(image_message)
 
     def callback_steering(self, data):
         self.server(
