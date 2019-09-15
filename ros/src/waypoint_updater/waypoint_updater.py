@@ -38,7 +38,7 @@ class WaypointUpdater(object):
         self.waypoints_2d = None
         self.waypoint_tree = None
         self.decelerate_count = 0
-        self.reported = False
+        self.stopped_at_red_light = False
 
         rospy.Subscriber("/current_pose", PoseStamped, self.pose_cb, queue_size=2)
         rospy.Subscriber("/base_waypoints", Lane, self.waypoints_cb, queue_size=8)
@@ -92,12 +92,14 @@ class WaypointUpdater(object):
             base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
 
             if (self.stopline_wp_idx == -1) or (self.stopline_wp_idx >= farthest_idx):
+                if self.stopped_at_red_light:
+                    rospy.logwarn("light is green again. accelerating")
                 lane.waypoints = base_waypoints
-                self.reported = False
+                self.stopped_at_red_light = False
             else:
-                if not self.reported:
+                if not self.stopped_at_red_light:
                     rospy.logwarn("seeing red light. decelerating")
-                    self.reported = True
+                    self.stopped_at_red_light = True
                 lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
 
             return lane

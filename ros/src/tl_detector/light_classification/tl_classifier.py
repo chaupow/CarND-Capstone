@@ -2,6 +2,7 @@ from styx_msgs.msg import TrafficLight
 import tensorflow as tf
 import numpy as np
 
+SCORE_THRESHOLD = 0.3
 
 class TLClassifier(object):
     def __init__(self, is_site):
@@ -10,7 +11,7 @@ class TLClassifier(object):
         else:
             PATH_GRAPH = r"light_classification/models/real/frozen_inference_graph.pb"
         self.graph = tf.Graph()
-        self.threshold = 0.3
+        self.threshold = SCORE_THRESHOLD
 
         with self.graph.as_default():
             graph = tf.GraphDef()
@@ -46,16 +47,25 @@ class TLClassifier(object):
         boxes = np.squeeze(boxes)
         scores = np.squeeze(scores)
         classes = np.squeeze(classes).astype(np.int32)
-        print(str(scores[0]))
-        if scores[0] > self.threshold:
-            if classes[0] == 1:
-                print("GREEN")
-                return TrafficLight.GREEN
-            elif classes[0] == 2:
-                print("RED")
-                return TrafficLight.RED
-            elif classes[0] == 3:
-                print("YELLO")
-                return TrafficLight.YELLOW
 
+        if classes[0] == 1:
+            if scores[0] > self.threshold:
+                print("SENT GREEN   ", scores[0])
+                return TrafficLight.GREEN
+            else:
+                print("ignored green", scores[0])
+        elif classes[0] == 2:
+            if scores[0] > self.threshold:
+                print("SENT RED     ", scores[0])
+                return TrafficLight.RED
+            else:
+                print("ignored red  ", scores[0])
+        elif classes[0] == 3:
+            if scores[0] > self.threshold:
+                print("SENT YELLO   ", scores[0])
+                return TrafficLight.YELLOW
+            else:
+                print("ignored yello", scores[0])
+
+        print("unknown      ", scores[0])
         return TrafficLight.UNKNOWN
