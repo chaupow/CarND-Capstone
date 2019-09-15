@@ -51,9 +51,9 @@ class DBWNode(object):
             "/vehicle/steering_cmd", SteeringCmd, queue_size=1
         )
         self.throttle_pub = rospy.Publisher(
-            "/vehicle/throttle_cmd", ThrottleCmd, queue_size=2
+            "/vehicle/throttle_cmd", ThrottleCmd, queue_size=1
         )
-        self.brake_pub = rospy.Publisher("/vehicle/brake_cmd", BrakeCmd, queue_size=2)
+        self.brake_pub = rospy.Publisher("/vehicle/brake_cmd", BrakeCmd, queue_size=1)
 
         # TODO: Create `Controller` object
         self.controller = Controller(
@@ -70,9 +70,13 @@ class DBWNode(object):
         )
 
         # TODO: Subscribe to all the topics you need to
-        rospy.Subscriber("/vehicle/dbw_enabled", Bool, self.dbw_enabled_cb)
-        rospy.Subscriber("/twist_cmd", TwistStamped, self.twist_cb)
-        rospy.Subscriber("/current_velocity", TwistStamped, self.velocity_cb)
+        rospy.Subscriber(
+            "/vehicle/dbw_enabled", Bool, self.dbw_enabled_cb, queue_size=1
+        )
+        rospy.Subscriber("/twist_cmd", TwistStamped, self.twist_cb, queue_size=1)
+        rospy.Subscriber(
+            "/current_velocity", TwistStamped, self.velocity_cb, queue_size=5
+        )
 
         self.current_vel = None
         self.curr_ang_vel = None

@@ -4,6 +4,7 @@ import numpy as np
 
 SCORE_THRESHOLD = 0.3
 
+
 class TLClassifier(object):
     def __init__(self, is_site):
         if not is_site:

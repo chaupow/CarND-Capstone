@@ -32,8 +32,12 @@ class TLDetector(object):
         self.lights = []
         self.traffic_light_waypoint_indexes = []
 
-        sub1 = rospy.Subscriber("/current_pose", PoseStamped, self.pose_cb)
-        sub2 = rospy.Subscriber("/base_waypoints", Lane, self.waypoints_cb)
+        sub1 = rospy.Subscriber(
+            "/current_pose", PoseStamped, self.pose_cb, queue_size=2
+        )
+        sub2 = rospy.Subscriber(
+            "/base_waypoints", Lane, self.waypoints_cb, queue_size=5
+        )
 
         """
         /vehicle/traffic_lights provides you with the location of the traffic light in 3D map space and
@@ -43,7 +47,7 @@ class TLDetector(object):
         rely on the position of the light and the camera image to predict it.
         """
         sub3 = rospy.Subscriber(
-            "/vehicle/traffic_lights", TrafficLightArray, self.traffic_cb
+            "/vehicle/traffic_lights", TrafficLightArray, self.traffic_cb, queue_size=2
         )
         sub6 = rospy.Subscriber("/image_color", Image, self.image_cb, queue_size=1)
 
@@ -150,7 +154,7 @@ class TLDetector(object):
 
         """
         # TODO implement
-        if self.waypoint_tree: 
+        if self.waypoint_tree:
             closest_idx = self.waypoint_tree.query([x, y], 1)[1]
             return closest_idx
 
