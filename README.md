@@ -7,10 +7,12 @@
 ```
 git clone https://github.com/chaupow/CarND-Capstone.git
 cd CarND-Capstone && pip install -r requirements.txt
-catkin_make && source devel/setup.sh && roslaunch launch/styx.launch
+cd ros && catkin_make && source devel/setup.sh && roslaunch launch/styx.launch
 ```
 
 ## Summary
+
+![](imgs/preview.gif)
 
 This was the hardest project so far in terms of understanding what is required and how to approach this. Here is some advice for anyone attempting this project:
 
