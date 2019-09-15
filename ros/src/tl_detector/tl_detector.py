@@ -17,6 +17,7 @@ import numpy as np
 # from darknet_ros_msgs.msg import BoundingBoxes
 
 STATE_COUNT_THRESHOLD = 3
+ROSPY_RATE = 10
 
 
 class TLDetector(object):
@@ -63,14 +64,11 @@ class TLDetector(object):
         self.last_wp = -1
         self.state_count = 0
 
-        # try ignoring some images
-        self.i = 0
-
         # rospy.spin()
         self.ros_spin()
 
     def ros_spin(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(ROSPY_RATE)
         while not rospy.is_shutdown():
             """Publish upcoming red lights at camera frequency.
             Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
@@ -121,12 +119,8 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
-        self.i = self.i + 1
-        # if self.i % 10 != 0:
-        #    return
         self.has_image = True
         self.camera_image = msg
-        # light_wp, state = self.process_traffic_lights()
 
         """
         Publish upcoming red lights at camera frequency.

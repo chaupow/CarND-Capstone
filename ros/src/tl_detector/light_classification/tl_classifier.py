@@ -13,10 +13,10 @@ class TLClassifier(object):
         self.threshold = 0.3
 
         with self.graph.as_default():
-            od_graph_def = tf.GraphDef()
+            graph = tf.GraphDef()
             with tf.gfile.GFile(PATH_GRAPH, "rb") as fid:
-                od_graph_def.ParseFromString(fid.read())
-                tf.import_graph_def(od_graph_def, name="")
+                graph.ParseFromString(fid.read())
+                tf.import_graph_def(graph, name="")
 
             self.image_tensor = self.graph.get_tensor_by_name("image_tensor:0")
             self.boxes = self.graph.get_tensor_by_name("detection_boxes:0")
