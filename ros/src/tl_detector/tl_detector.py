@@ -17,7 +17,7 @@ import numpy as np
 # from darknet_ros_msgs.msg import BoundingBoxes
 
 STATE_COUNT_THRESHOLD = 2
-ROSPY_RATE = 10
+ROSPY_RATE = 15
 
 
 class TLDetector(object):
